@@ -1,0 +1,173 @@
+@import "tailwindcss";
+
+/* =========================================================================
+   Design tokens
+   Change colours here — every component reads from these.
+   ========================================================================= */
+@theme {
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --color-canvas: #f2f4f7;   /* app background */
+  --color-surface: #ffffff;  /* panels, tables, inputs */
+  --color-subtle: #f7f8fa;   /* table header, hover rows */
+  --color-line: #dfe3e9;     /* borders */
+  --color-line-strong: #c9d0d9;
+  --color-ink: #152033;      /* headings, primary buttons */
+  --color-body: #2c3748;     /* body text */
+  --color-muted: #5d6879;    /* secondary text */
+  --color-faint: #8a93a1;    /* placeholders, meta */
+  --color-accent: #1f5fbf;   /* links, focus, selection */
+  --color-accent-soft: #e9f0fb;
+  --color-danger: #b42318;
+  --color-danger-soft: #fdecea;
+  --color-success: #1e7a47;
+  --color-success-soft: #e6f4ec;
+  --color-warning: #9a5b00;
+  --color-warning-soft: #fdf3e1;
+}
+
+/* Tones: used by status badges, stage rail and charts.
+   To add a lead status, add it in config/leadStatuses.js and pick a tone. */
+.tone-blue   { --tone: #2459d6; --tone-soft: #e8effd; --tone-line: #bcd0f6; }
+.tone-amber  { --tone: #a15c00; --tone-soft: #fdf1dc; --tone-line: #f1d19a; }
+.tone-violet { --tone: #6b3fb8; --tone-soft: #f1eafb; --tone-line: #d6c4f1; }
+.tone-teal   { --tone: #0b7575; --tone-soft: #e2f4f3; --tone-line: #aedcda; }
+.tone-green  { --tone: #1e7a47; --tone-soft: #e6f4ec; --tone-line: #b3dcc3; }
+.tone-gray   { --tone: #5d6879; --tone-soft: #eef0f3; --tone-line: #d3d8df; }
+.tone-red    { --tone: #b42318; --tone-soft: #fdecea; --tone-line: #f3c1bc; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-body);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Suggestion inputs (datalist) should look like plain text fields */
+input[list]::-webkit-calendar-picker-indicator {
+  display: none !important;
+}
+
+/* Keep focused fields clear of the sticky header */
+input, select, textarea {
+  scroll-margin-top: 5rem;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@keyframes sheet-in {
+  from { transform: translateY(12px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+@keyframes drawer-in {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
+
+/* =========================================================================
+   Reusable component classes
+   Prefer these over long Tailwind strings when a pattern repeats.
+   ========================================================================= */
+@layer components {
+  /* ---- Typography ---- */
+  .page-title    { @apply text-xl font-semibold text-ink tracking-tight; }
+  .section-title { @apply text-[15px] font-semibold text-ink; }
+  .label         { @apply block text-[13px] font-medium text-body mb-1.5; }
+  .meta          { @apply text-xs text-muted; }
+  .link          { @apply text-accent hover:underline underline-offset-2; }
+
+  /* ---- Layout ---- */
+  .page          { @apply mx-auto w-full max-w-[1320px] px-4 py-5 sm:px-6 lg:py-6; }
+  .panel         { @apply bg-surface border border-line rounded-lg; }
+  .panel-header  { @apply flex items-center justify-between gap-3 px-4 py-3 border-b border-line; }
+  .panel-body    { @apply p-4; }
+
+  /* ---- Buttons ---- */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 h-9 px-3.5 rounded-md text-sm font-medium
+      whitespace-nowrap select-none transition-colors cursor-pointer
+      disabled:opacity-50 disabled:pointer-events-none;
+  }
+  .btn-sm        { @apply h-8 px-2.5 text-[13px]; }
+  .btn-lg        { @apply h-11 px-5 text-[15px]; }
+  .btn-icon      { @apply w-9 px-0; }
+  .btn-primary   { @apply bg-ink text-white hover:bg-[#24344e]; }
+  .btn-secondary { @apply bg-surface text-ink border border-line-strong hover:bg-subtle; }
+  .btn-ghost     { @apply text-body hover:bg-subtle; }
+  .btn-danger    { @apply bg-danger text-white hover:bg-[#9a1d14]; }
+  .btn-success   { @apply bg-success text-white hover:bg-[#186639]; }
+
+  /* ---- Form controls ---- */
+  .input {
+    @apply w-full h-9 px-3 rounded-md bg-surface border border-line-strong text-sm text-ink
+      placeholder:text-faint transition-colors
+      focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20
+      disabled:bg-subtle disabled:text-muted;
+  }
+  .input-error   { @apply border-danger focus:border-danger focus:ring-danger/20; }
+  .textarea      { @apply h-auto py-2 leading-relaxed; }
+  .select {
+    @apply pr-8 appearance-none bg-no-repeat;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%235d6879' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-position: right 0.6rem center;
+  }
+  .field-error   { @apply mt-1 text-xs text-danger; }
+  .field-hint    { @apply mt-1 text-xs text-muted; }
+
+  /* ---- Badges ---- */
+  .badge {
+    @apply inline-flex items-center gap-1.5 h-6 px-2 rounded text-xs font-medium whitespace-nowrap;
+    color: var(--tone, var(--color-muted));
+    background: var(--tone-soft, var(--color-subtle));
+  }
+  .badge-dot {
+    @apply inline-block h-1.5 w-1.5 rounded-full shrink-0;
+    background: var(--tone, currentColor);
+  }
+
+  /* ---- Tables ---- */
+  .table      { @apply w-full text-sm border-collapse; }
+  .table th   { @apply px-3 py-2.5 text-left text-xs font-medium text-muted bg-subtle border-b border-line whitespace-nowrap; }
+  .table td   { @apply px-3 py-3 border-b border-line align-middle; }
+  .table tbody tr:hover { @apply bg-subtle; }
+  .table tbody tr:last-child td { @apply border-b-0; }
+  /* Keeps the actions column visible when a wide table scrolls sideways */
+  .table .col-sticky-end { @apply sticky right-0 z-[1] bg-surface shadow-[-1px_0_0_var(--color-line)]; }
+  .table th.col-sticky-end { @apply bg-subtle; }
+  .table tbody tr:hover td.col-sticky-end { @apply bg-subtle; }
+
+  /* ---- Detail lists (label / value pairs) ---- */
+  .dl        { @apply grid grid-cols-1 gap-x-6 gap-y-3.5 sm:grid-cols-2; }
+  .dl dt     { @apply text-xs text-muted; }
+  .dl dd     { @apply text-sm text-ink mt-0.5 break-words; }
+
+  /* ---- Menus / popovers ---- */
+  .popover   { @apply absolute z-40 mt-2 bg-surface border border-line rounded-lg shadow-[0_8px_24px_rgba(21,32,51,0.12)]; }
+  .menu-item { @apply flex w-full items-center gap-2 px-3 py-2 text-sm text-body hover:bg-subtle text-left cursor-pointer; }
+
+  /* ---- Skeleton ---- */
+  .skeleton  { @apply rounded bg-[#e6e9ee] animate-pulse; }
+
+  /* ---- Chips (multi-select options) ---- */
+  .chip {
+    @apply inline-flex items-center h-8 px-3 rounded-md border border-line-strong bg-surface text-[13px] text-body cursor-pointer select-none;
+  }
+  .chip-on   { @apply border-accent bg-accent-soft text-accent; }
+}
