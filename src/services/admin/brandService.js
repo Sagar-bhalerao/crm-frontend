@@ -17,6 +17,6 @@ export const setBrandStatus = (id, status) => request(`/brands/${id}/status`, { 
 export const listBrandLocations = (id, query = {}) => requestList(`/brands/${id}/locations`, { query });
 
 /** Active brands only, for dropdowns. */
-export const listActiveBrands = () => requestList("/brands", { query: { status: "active", pageSize: 100, sort: "name:asc" } });
+export const listActiveBrands = () => requestList("/brands", { query: { status: 1, pageSize: 100, sort: "name:asc" } });
 
 export const deleteBrand = (id) => request(`/brands/${id}`, { method: "DELETE" });

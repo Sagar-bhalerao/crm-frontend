@@ -32,8 +32,8 @@ export function brandActions(brand, { canUpdate, canDelete, onEdit, onToggle, on
     canUpdate && { key: "edit", label: "Edit brand", icon: Pencil, onClick: onEdit },
     canUpdate && {
       key: "status",
-      label: brand.status === "active" ? "Deactivate" : "Activate",
-      icon: brand.status === "active" ? PowerOff : Power,
+      label: brand.status === 1 ? "Deactivate" : "Activate",
+      icon: brand.status === 1 ? PowerOff : Power,
       onClick: onToggle,
       separator: true,
     },
@@ -54,10 +54,10 @@ export default function BrandsView() {
   const canDelete = can(P.BRAND_DELETE);
 
   const confirmToggle = async () => {
-    const next = toggling.status === "active" ? "inactive" : "active";
-    const ok = await run(() => brandService.setBrandStatus(toggling.id, next), {
-      success: next === "active" ? "Brand activated" : "Brand deactivated",
-      successDescription: next === "inactive" ? "Existing locations and leads are unchanged." : undefined,
+    const next = toggling.status === 1 ? 0 : 1;
+    const ok = await run(() => brandService.setBrandStatus(Number(toggling.id), next), {
+      success: next === 1 ? "Brand activated" : "Brand deactivated",
+      successDescription: next === 0 ? "Existing locations and leads are unchanged." : undefined,
     });
     setToggling(null);
     if (ok) list.reload();
@@ -70,7 +70,7 @@ export default function BrandsView() {
   };
 
   const menu = (b) =>
-    brandActions(b, {
+    brandActions(b, { 
       canUpdate,
       canDelete,
       onEdit: () => setForm({ brand: b }),
@@ -86,7 +86,7 @@ export default function BrandsView() {
       render: (b) => (
         <div>
           <Link href={`/brands/${b.id}`} className="font-medium text-ink hover:underline">
-            {b.name}
+            {b.brand_name}
           </Link>
           {b.description && <p className="meta line-clamp-1 max-w-md">{b.description}</p>}
         </div>
@@ -112,7 +112,7 @@ export default function BrandsView() {
       align: "right",
       render: (b) => (
         <div className="flex justify-end">
-          <DropdownMenu items={menu(b)} label={`Actions for ${b.name}`} />
+          <DropdownMenu items={menu(b)} label={`Actions for ${b.brand_name}`} />
         </div>
       ),
     },
@@ -121,13 +121,13 @@ export default function BrandsView() {
   const card = (b) => (
     <div className="flex items-start justify-between gap-3">
       <div className="min-w-0">
-        <Link href={`/brands/${b.id}`} className="font-medium text-ink">{b.name}</Link>
+        <Link href={`/brands/${b.id}`} className="font-medium text-ink">{b.brand_name}</Link>
         <p className="meta">
           {b.code} · {b.locationCount ?? 0} location{(b.locationCount ?? 0) === 1 ? "" : "s"} · {formatDate(b.createdAt)}
         </p>
         <div className="mt-1.5"><StatusBadge status={b.status} /></div>
       </div>
-      <DropdownMenu items={menu(b)} label={`Actions for ${b.name}`} />
+      <DropdownMenu items={menu(b)} label={`Actions for ${b.brand_name}`} />
     </div>
   );
 
@@ -151,8 +151,8 @@ export default function BrandsView() {
               placeholder: "All statuses",
               value: list.query.status,
               options: [
-                { value: "active", label: "Active" },
-                { value: "inactive", label: "Inactive" },
+                { value: 1, label: "Active" },
+                { value: 0, label: "Inactive" },
               ],
             },
           ]}
@@ -210,19 +210,19 @@ export default function BrandsView() {
 
       <ConfirmDialog
         open={Boolean(toggling)}
-        title={toggling?.status === "active" ? `Deactivate ${toggling?.name}?` : `Activate ${toggling?.name}?`}
+        title={toggling?.status === 1 ? `Deactivate ${toggling?.name}?` : `Activate ${toggling?.name}?`}
         description={
-          toggling?.status === "active"
+          toggling?.status === 1
             ? "It stops being offered for new configuration. Its locations, leads and history stay exactly as they are, and you can activate it again at any time."
             : "It becomes available again for new locations and leads."
         }
-        confirmLabel={toggling?.status === "active" ? "Deactivate" : "Activate"}
-        tone={toggling?.status === "active" ? "danger" : "success"}
+        confirmLabel={toggling?.status === 1 ? "Deactivate" : "Activate"}
+        tone={toggling?.status === 1 ? "danger" : "success"}
         loading={busy}
         onConfirm={confirmToggle}
         onClose={() => setToggling(null)}
       >
-        {toggling?.status === "active" && (toggling?.locationCount ?? 0) > 0 && (
+        {toggling?.status === 1 && (toggling?.locationCount ?? 0) > 0 && (
           <p className="mt-3 flex items-center gap-2 rounded-md bg-subtle px-3 py-2 text-[13px] text-body">
             <MapPin size={14} className="text-muted" />
             {toggling.locationCount} location{toggling.locationCount === 1 ? "" : "s"} will stay linked to this brand.
