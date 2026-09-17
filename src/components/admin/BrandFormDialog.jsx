@@ -5,7 +5,7 @@ import { useAction } from "@/hooks/useAction";
 import { brandService } from "@/services/admin";
 import { Button, Field, Input, Modal, Select, Textarea } from "@/components/ui";
 
-const EMPTY = { name: "", code: "", description: "", logoUrl: "", status: "active" };
+const EMPTY = { name: "", code: "", description: "", logoUrl: "", status: 1 };
 
 function validate(form) {
   const errors = {};
@@ -33,7 +33,7 @@ export default function BrandFormDialog({ open, brand, onClose, onSaved }) {
             code: brand.code || "",
             description: brand.description || "",
             logoUrl: brand.logoUrl || "",
-            status: brand.status || "active",
+            status: Number(brand.status) || 1,
           }
         : EMPTY
     );
@@ -108,8 +108,8 @@ export default function BrandFormDialog({ open, brand, onClose, onSaved }) {
               value={form.status}
               onChange={set("status")}
               options={[
-                { value: "active", label: "Active" },
-                { value: "inactive", label: "Inactive" },
+                { value: 1, label: "Active" },
+                { value: 0, label: "Inactive" },
               ]}
             />
           )}

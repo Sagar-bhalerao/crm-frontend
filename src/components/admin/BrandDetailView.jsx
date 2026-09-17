@@ -78,9 +78,9 @@ export default function BrandDetailView({ id }) {
   }
 
   const confirmToggle = async () => {
-    const next = brand.status === "active" ? "inactive" : "active";
+    const next = brand.status === 1 ? 0 : 1;
     const updated = await run(() => brandService.setBrandStatus(brand.id, next), {
-      success: next === "active" ? "Brand activated" : "Brand deactivated",
+      success: next === 1 ? "Brand activated" : "Brand deactivated",
     });
     setToggling(false);
     if (updated) load();
@@ -92,7 +92,7 @@ export default function BrandDetailView({ id }) {
     if (ok) router.push("/brands");
   };
 
-  const activeLocations = (locations || []).filter((l) => l.status === "active").length;
+  const activeLocations = (locations || []).filter((l) => l.status === 1).length;
 
   return (
     <div className="page">
