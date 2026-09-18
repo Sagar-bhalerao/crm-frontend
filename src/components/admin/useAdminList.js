@@ -50,7 +50,7 @@ export function useAdminList(fetcher, initial = {}) {
     setQuery((q) => ({ ...q, page: 1, search: "", status: "", ...Object.fromEntries(Object.keys(initial).filter((k) => k !== "sort").map((k) => [k, ""])) }));
   };
 
-  const hasFilters = Boolean(query.search || query.status || query.brandId);
+  const hasFilters = Boolean(query.search) || query.status !== "" || Boolean(query.brandId);
 
   return { ...state, query, search, setSearch, update, setPage, clear, hasFilters, reload: load };
 }
