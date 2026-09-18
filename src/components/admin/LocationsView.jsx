@@ -6,7 +6,7 @@ import { MapPin, Pencil, Plus, Power, PowerOff, Trash2 } from "lucide-react";
 import { P } from "@/config/permissions";
 import { useAuth } from "@/context/AuthContext";
 import { useAction } from "@/hooks/useAction";
-import { formatDate, formatPhone } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 import { brandService, locationService } from "@/services/admin";
 import {
   Button, ConfirmDialog, DataTable, DropdownMenu, EmptyState, ErrorState,
@@ -20,8 +20,8 @@ import { useAdminList } from "./useAdminList";
 const SORT_OPTIONS = [
   { value: "name:asc", label: "Name A–Z" },
   { value: "name:desc", label: "Name Z–A" },
-  { value: "city:asc", label: "City A–Z" },
-  { value: "created_at:desc", label: "Newest first" },
+  { value: "brand:asc", label: "Brand A–Z" },
+  { value: "createdAt:desc", label: "Newest first" },
 ];
 
 function LocationsContent() {
@@ -46,12 +46,13 @@ function LocationsContent() {
       .catch(setBrandsError);
   }, []);
 
-  const activeBrands = brands.filter((b) => b.status === "active");
+  // The API sends numbers, so compare against 1 — never the string "1".
+  const activeBrands = brands.filter((b) => b.status === 1);
 
   const confirmToggle = async () => {
-    const next = toggling.status === "active" ? "inactive" : "active";
+    const next = toggling.status === 1 ? 0 : 1;
     const ok = await run(() => locationService.setLocationStatus(toggling.id, next), {
-      success: next === "active" ? "Location activated" : "Location deactivated",
+      success: next === 1 ? "Location activated" : "Location deactivated",
     });
     setToggling(null);
     if (ok) list.reload();
@@ -69,8 +70,8 @@ function LocationsContent() {
       { key: "brand", label: "View brand", icon: MapPin, href: `/brands/${l.brandId}` },
       canUpdate && {
         key: "status",
-        label: l.status === "active" ? "Deactivate" : "Activate",
-        icon: l.status === "active" ? PowerOff : Power,
+        label: l.status === 1 ? "Deactivate" : "Activate",
+        icon: l.status === 1 ? PowerOff : Power,
         onClick: () => setToggling(l),
         separator: true,
       },
@@ -82,42 +83,21 @@ function LocationsContent() {
       key: "name",
       label: "Location",
       sortable: true,
-      render: (l) => (
-        <div>
-          <p className="font-medium text-ink">{l.name}</p>
-          <p className="meta">{l.code}</p>
-        </div>
-      ),
+      render: (l) => <span className="font-medium text-ink">{l.name}</span>,
     },
-    { key: "brand", label: "Brand", render: (l) => <span className="text-body">{l.brandName || "—"}</span> },
     {
-      key: "city",
-      label: "City / State",
+      key: "brand",
+      label: "Brand",
       sortable: true,
-      render: (l) => (
-        <span className="text-body">
-          {l.city || "—"}
-          {l.state ? <span className="meta block">{l.state}</span> : null}
-        </span>
-      ),
-    },
-    {
-      key: "address",
-      label: "Address",
-      render: (l) => <span className="meta line-clamp-2 block max-w-[240px]">{l.address || "—"}</span>,
-    },
-    {
-      key: "contactNumber",
-      label: "Contact",
-      render: (l) => (
-        <span className="whitespace-nowrap text-body">
-          {l.contactNumber || "—"}
-          {l.email ? <span className="meta block">{l.email}</span> : null}
-        </span>
-      ),
+      render: (l) => <span className="text-body">{l.brandName || "—"}</span>,
     },
     { key: "status", label: "Status", sortable: true, render: (l) => <StatusBadge status={l.status} /> },
-    { key: "created_at", label: "Created", sortable: true, render: (l) => <span className="whitespace-nowrap text-body">{formatDate(l.createdAt)}</span> },
+    {
+      key: "createdAt",
+      label: "Created",
+      sortable: true,
+      render: (l) => <span className="whitespace-nowrap text-body">{formatDate(l.createdAt)}</span>,
+    },
     {
       key: "actions",
       label: "Actions",
@@ -135,8 +115,7 @@ function LocationsContent() {
     <div className="flex items-start justify-between gap-3">
       <div className="min-w-0">
         <p className="font-medium text-ink">{l.name}</p>
-        <p className="meta">{[l.code, l.brandName].filter(Boolean).join(" · ") || "No code"}</p>
-        <p className="meta">{[l.city, l.state].filter(Boolean).join(", ") || "No city set"}</p>
+        <p className="meta">{l.brandName || "—"}</p>
         <div className="mt-1.5"><StatusBadge status={l.status} /></div>
       </div>
       <DropdownMenu items={menu(l)} label={`Actions for ${l.name}`} />
@@ -169,6 +148,7 @@ function LocationsContent() {
         <ListToolbar
           search={list.search}
           onSearch={list.setSearch}
+          searchPlaceholder="Search location name"
           filters={[
             {
               key: "brandId",
@@ -179,10 +159,10 @@ function LocationsContent() {
             {
               key: "status",
               placeholder: "All statuses",
-              value: list.query.status,
+              value: list.query.status === "" || list.query.status == null ? "" : String(list.query.status),
               options: [
-                { value: "active", label: "Active" },
-                { value: "inactive", label: "Inactive" },
+                { value: "1", label: "Active" },
+                { value: "0", label: "Inactive" },
               ],
             },
           ]}
@@ -207,8 +187,8 @@ function LocationsContent() {
               activeBrands.length === 0
                 ? "Add an active brand first, then add its locations."
                 : list.hasFilters
-                ? "Try a different search or brand."
-                : "Add the outlets that belong to your brands."
+                  ? "Try a different search or brand."
+                  : "Add the outlets that belong to your brands."
             }
             action={
               list.hasFilters ? (
@@ -229,7 +209,7 @@ function LocationsContent() {
               onSort={(sort) => list.update({ sort })}
               renderCard={card}
               busy={list.loading}
-              minWidth={1080}
+              minWidth={640}
             />
             <div className="border-t border-line">
               <Pagination
@@ -255,14 +235,14 @@ function LocationsContent() {
 
       <ConfirmDialog
         open={Boolean(toggling)}
-        title={toggling?.status === "active" ? `Deactivate ${toggling?.name}?` : `Activate ${toggling?.name}?`}
+        title={toggling?.status === 1 ? `Deactivate ${toggling?.name}?` : `Activate ${toggling?.name}?`}
         description={
-          toggling?.status === "active"
+          toggling?.status === 1
             ? "It stops being offered for new leads and configuration. Its existing leads and history stay as they are."
             : "It becomes available again for new leads."
         }
-        confirmLabel={toggling?.status === "active" ? "Deactivate" : "Activate"}
-        tone={toggling?.status === "active" ? "danger" : "success"}
+        confirmLabel={toggling?.status === 1 ? "Deactivate" : "Activate"}
+        tone={toggling?.status === 1 ? "danger" : "success"}
         loading={busy}
         onConfirm={confirmToggle}
         onClose={() => setToggling(null)}

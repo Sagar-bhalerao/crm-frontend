@@ -10,7 +10,7 @@ export const DATA_SOURCE = process.env.NEXT_PUBLIC_DATA_SOURCE || "mock";
  * Express API base URL.
  * Brands and Locations always go through this API, whatever DATA_SOURCE is set to.
  */
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api/v1";
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api/v1";
 
 export const MOCK_LATENCY_MS = Number(process.env.NEXT_PUBLIC_MOCK_LATENCY_MS ?? 250);
 
