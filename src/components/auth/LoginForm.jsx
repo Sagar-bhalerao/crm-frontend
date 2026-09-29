@@ -98,9 +98,7 @@ export default function LoginForm() {
         </Button>
       </form>
 
-      {DATA_SOURCE === "mock" && (
-        <DemoAccounts onPick={(email, password) => setForm((f) => ({ ...f, email, password }))} />
-      )}
+    
 
       <ForgotPasswordDialog open={resetOpen} onClose={() => setResetOpen(false)} initialEmail={form.email} />
     </>

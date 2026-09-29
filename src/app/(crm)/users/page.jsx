@@ -5,7 +5,7 @@ export const metadata = { title: "Users" };
 
 export default function Page() {
   return (
-    <RequirePermission permission="user.manage">
+    <RequirePermission permission="user.view">
       <UsersView />
     </RequirePermission>
   );
