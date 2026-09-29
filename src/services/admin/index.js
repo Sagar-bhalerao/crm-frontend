@@ -7,3 +7,6 @@
 export * as brandService from "./brandService";
 export * as locationService from "./locationService";
 export * as settingsService from "./settingsService";
+export * as roleService from "./roleService";
+export * as userService from "./userService";
+export * as authService from "./authService";

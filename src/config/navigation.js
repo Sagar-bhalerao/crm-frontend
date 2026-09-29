@@ -32,8 +32,8 @@ export const NAV_SECTIONS = [
   {
     label: "Administration",
     items: [
-      { href: "/users", label: "Users", icon: Users, permission: P.USER_MANAGE },
-      { href: "/roles", label: "Roles & permissions", icon: ShieldCheck, permission: P.ROLE_MANAGE },
+           { href: "/users", label: "Users", icon: Users, permission: P.USER_VIEW },
+      { href: "/roles", label: "Roles & permissions", icon: ShieldCheck, permission: P.ROLE_VIEW },
     ],
   },
   {

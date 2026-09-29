@@ -5,7 +5,7 @@ export const metadata = { title: "Roles & permissions" };
 
 export default function Page() {
   return (
-    <RequirePermission permission="role.manage">
+    <RequirePermission permission="role.view">
       <RolesView />
     </RequirePermission>
   );

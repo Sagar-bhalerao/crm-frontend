@@ -1,9 +1,5 @@
 import { request, requestList } from "./client";
 
-/**
- * Brand configuration. Backed by PostgreSQL through the Express API,
- * never by mock data.
- */
 export const listBrands = (query = {}) => requestList("/brands", { query });
 
 export const getBrand = (id) => request(`/brands/${id}`);
