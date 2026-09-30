@@ -90,8 +90,8 @@ export const PERMISSION_GROUPS = [
       { key: P.LOCATION_CREATE, label: "Create locations" },
       { key: P.LOCATION_UPDATE, label: "Update locations and their status" },
       { key: P.LOCATION_DELETE, label: "Delete locations" },
-      { key: P.SETTINGS_VIEW, label: "View global settings" },
-      { key: P.SETTINGS_MANAGE, label: "Change global settings" },
+      { key: P.SETTINGS_VIEW, label: "View WhatsApp and mail configuration" },
+      { key: P.SETTINGS_MANAGE, label: "Manage WhatsApp and mail configuration" },
     ],
   },
   {

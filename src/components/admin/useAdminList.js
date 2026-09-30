@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useSettings } from "@/context/SettingsContext";
+import { DEFAULT_PAGE_SIZE } from "@/config/app";
 import { useDebounce } from "@/hooks/useDebounce";
 
 /**
@@ -11,13 +11,7 @@ import { useDebounce } from "@/hooks/useDebounce";
  *   const list = useAdminList(brandService.listBrands, { sort: "name:asc" });
  */
 export function useAdminList(fetcher, initial = {}) {
-  const { settings } = useSettings();
-  const [query, setQuery] = useState({ page: 1, pageSize: settings.pageSize, search: "", status: "", sort: "name:asc", ...initial });
-
-  // Rows per page comes from Configuration.
-  useEffect(() => {
-    setQuery((q) => (q.pageSize === settings.pageSize ? q : { ...q, pageSize: settings.pageSize, page: 1 }));
-  }, [settings.pageSize]);
+  const [query, setQuery] = useState({ page: 1, pageSize: DEFAULT_PAGE_SIZE, search: "", status: "", sort: "name:asc", ...initial });
   const [search, setSearch] = useState(query.search);
   const debounced = useDebounce(search, 300);
   const [state, setState] = useState({ data: null, error: null, loading: true });

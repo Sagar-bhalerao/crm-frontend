@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSettings } from "@/context/SettingsContext";
+import { APP_DEFAULTS } from "@/config/app";
 import { useAction } from "@/hooks/useAction";
 import { addDays, formatCurrency, toDateInput } from "@/lib/format";
 import { calcTotals } from "@/lib/quotation";
@@ -12,7 +12,7 @@ export default function InvoiceDialog({ open, lead, onClose }) {
   const [form, setForm] = useState(null);
   const [error, setError] = useState("");
   const [run, busy] = useAction();
-  const { settings } = useSettings();
+  const settings = APP_DEFAULTS;
 
   useEffect(() => {
     if (!open || !lead) return;

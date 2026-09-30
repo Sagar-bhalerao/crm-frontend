@@ -7,7 +7,17 @@ import { Button, Input, Select } from "@/components/ui";
  * Search + filter bar shared by the configuration lists.
  * filters: [{ key, placeholder, value, options }]
  */
-export default function ListToolbar({ search, onSearch, filters = [], sortOptions, sort, onChange, onClear, showClear }) {
+export default function ListToolbar({
+  search,
+  onSearch,
+  searchPlaceholder = "Search name or code",
+  filters = [],
+  sortOptions,
+  sort,
+  onChange,
+  onClear,
+  showClear,
+}) {
   return (
     <div className="border-b border-line p-3 sm:p-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
@@ -17,7 +27,7 @@ export default function ListToolbar({ search, onSearch, filters = [], sortOption
             type="search"
             value={search}
             onChange={(e) => onSearch(e.target.value)}
-            placeholder="Search name or code"
+            placeholder={searchPlaceholder}
             aria-label="Search"
             className="pl-9"
           />

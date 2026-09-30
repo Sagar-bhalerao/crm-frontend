@@ -2,7 +2,7 @@ import { LEAD_STATUSES } from "@/config/leadStatuses";
 import { LEAD_TYPES } from "@/config/leadOptions";
 import { addDays, endOfDay, startOfDay, startOfWeek } from "./format";
 import { isFollowUpOverdue, isOpenLead } from "./leadWorkflow";
-import { getRuntimeSettings } from "./runtimeSettings";
+import { APP_DEFAULTS } from "@/config/app";
 
 const HOUR = 60 * 60 * 1000;
 
@@ -41,7 +41,7 @@ export function buildDashboard(leads, { outlets, now = Date.now() }) {
 
   // What needs attention right now
   // "First response target" in Configuration
-  const responseHours = getRuntimeSettings().leadResponseHours;
+  const responseHours = APP_DEFAULTS.leadResponseHours;
   const uncontacted = leads.filter((l) => l.status === "new" && now - time(l.createdAt) > responseHours * HOUR);
   const overdue = leads.filter((l) => isFollowUpOverdue(l, now));
   const staleQuotes = leads.filter(
