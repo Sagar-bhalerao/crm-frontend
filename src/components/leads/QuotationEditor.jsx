@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
-import { useSettings } from "@/context/SettingsContext";
+import { APP_DEFAULTS } from "@/config/app";
 import { DEFAULT_PACKAGE_BY_TYPE, getCatalog } from "@/config/pricing";
 import { useAction } from "@/hooks/useAction";
 import { addDays, formatCurrency, toDateInput } from "@/lib/format";
@@ -36,7 +36,7 @@ export default function QuotationEditor({ open, lead, onClose }) {
   const [error, setError] = useState("");
   const [run, busy] = useAction();
   const [pending, setPending] = useState(null); // "draft" | "share"
-  const { settings } = useSettings();
+  const settings = APP_DEFAULTS;
 
   useEffect(() => {
     if (open && lead) {

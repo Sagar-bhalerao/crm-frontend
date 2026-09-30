@@ -24,3 +24,20 @@ export const DEFAULT_ADVANCE_PERCENT = 50;
 
 /** Quotation validity in days. */
 export const QUOTATION_VALID_DAYS = 7;
+
+/** A new lead is flagged on the dashboard after this many hours without a response. */
+export const LEAD_RESPONSE_HOURS = 2;
+
+/**
+ * Defaults for quotations, invoices, the dashboard and lists. These used to be
+ * editable on the Configuration page; they are now fixed here, so changing one
+ * means changing this file.
+ */
+export const APP_DEFAULTS = Object.freeze({
+  taxRate: DEFAULT_TAX_RATE,
+  advancePercent: DEFAULT_ADVANCE_PERCENT,
+  quotationValidDays: QUOTATION_VALID_DAYS,
+  pageSize: DEFAULT_PAGE_SIZE,
+  currency: "INR",
+  leadResponseHours: LEAD_RESPONSE_HOURS,
+});
