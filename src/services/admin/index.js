@@ -6,8 +6,7 @@
  */
 export * as brandService from "./brandService";
 export * as locationService from "./locationService";
-export * as whatsappConfigService from "./whatsappConfigService";
-export * as mailConfigService from "./mailConfigService";
 export * as roleService from "./roleService";
 export * as userService from "./userService";
 export * as authService from "./authService";
+export * as messagingService from "./messagingService";
