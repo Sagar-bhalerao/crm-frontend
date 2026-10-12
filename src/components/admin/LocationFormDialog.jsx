@@ -5,12 +5,13 @@ import { useAction } from "@/hooks/useAction";
 import { locationService } from "@/services/admin";
 import { Button, Field, Input, Modal, Select } from "@/components/ui";
 
-const EMPTY = { brandId: "", name: "", status: "1" };
+const EMPTY = { brandId: "", name: "", status: "1", code: "" };
 
 function validate(form) {
   const errors = {};
   if (!form.brandId) errors.brandId = "Choose a brand";
   if (form.name.trim().length < 2) errors.name = "Enter the location name";
+  if (form.code.trim().length < 2) errors.code = "Enter the location code";
   return errors;
 }
 
@@ -29,6 +30,7 @@ export default function LocationFormDialog({ open, location, brands = [], defaul
           brandId: String(location.brandId ?? ""),
           name: location.name || "",
           status: location.status || "1",
+          code: location.code || "",
         }
         : {
           ...EMPTY,
@@ -56,6 +58,7 @@ export default function LocationFormDialog({ open, location, brands = [], defaul
       brandId: Number(form.brandId),
       name: form.name.trim(),
       status: Number(form.status),
+      code: form.code.trim(),
     };
 
     const saved = await run(
@@ -107,6 +110,10 @@ export default function LocationFormDialog({ open, location, brands = [], defaul
 
         <Field label="Location name" required error={errors.name}>
           {(p) => <Input {...p} value={form.name} onChange={set("name")} maxLength={120} placeholder="Mumbai" />}
+        </Field>
+
+        <Field label="Location code" required error={errors.code}>
+          {(p) => <Input {...p} value={form.code} onChange={set("code")} maxLength={50} placeholder="MUM" />}
         </Field>
 
         <Field label="Status">
