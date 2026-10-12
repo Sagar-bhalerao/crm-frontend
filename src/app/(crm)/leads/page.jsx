@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import RequirePermission from "@/components/layout/RequirePermission";
 import LeadsView from "@/components/leads/LeadsView";
+// import LeadsListsView from "@/components/leads/LeadsListView";
 
 export const metadata = { title: "Leads" };
 

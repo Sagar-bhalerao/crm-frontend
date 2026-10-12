@@ -10,3 +10,5 @@ export * as roleService from "./roleService";
 export * as userService from "./userService";
 export * as authService from "./authService";
 export * as messagingService from "./messagingService";
+export * as leadService from "./leadService";
+export * as rateCardService from "./rateCardService";

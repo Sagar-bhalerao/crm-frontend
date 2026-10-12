@@ -1,16 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Mail, MessageCircle } from "lucide-react";
+import { Mail, MessageCircle,IndianRupee } from "lucide-react";
 import { P } from "@/config/permissions";
 import { useAuth } from "@/context/AuthContext";
 import { PageHeader, Tabs } from "@/components/ui";
 import MessagingSettings from "./MessagingSettings";
 import ReadOnlyNotice from "./ReadOnlyNotice";
+import RateCardTab from "./RateCardTab";
 
 const TABS = [
   { key: "whatsapp", label: <><MessageCircle size={15} />WhatsApp</> },
   { key: "email", label: <><Mail size={15} />Email</> },
+   { key: "rates", label: <><IndianRupee size={15} />Rate card</> },
 ];
 
 /**
@@ -47,6 +49,7 @@ export default function SettingsView() {
 
       {tab === "whatsapp" && <MessagingSettings channel="whatsapp" />}
       {tab === "email" && <MessagingSettings channel="email" />}
+      {tab === "rates" && <RateCardTab />}
     </div>
   );
 }

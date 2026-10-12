@@ -93,6 +93,12 @@ function LocationsContent() {
     },
     { key: "status", label: "Status", sortable: true, render: (l) => <StatusBadge status={l.status} /> },
     {
+      key: "code",
+      label: "Code",
+      render: (l) => <span className="text-body">{l.code || "—"}</span>,
+    },
+    
+    {
       key: "createdAt",
       label: "Created",
       sortable: true,
