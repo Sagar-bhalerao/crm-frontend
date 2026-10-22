@@ -1,7 +1,7 @@
 /**
  * App-wide settings. Values that change per environment live in .env.
  */
-export const APP_NAME = "Nucleus CRM";
+export const APP_NAME = "CRM";
 
 /** "mock" (default) or "api" — see services/index.js */
 export const DATA_SOURCE = process.env.NEXT_PUBLIC_DATA_SOURCE || "mock";

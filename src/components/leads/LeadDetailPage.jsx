@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft, CalendarDays, CheckCircle2, FileText, MapPin,
-  Pencil, PhoneCall, Tag, UserCheck,CircleDot, FilePlus, Receipt, Send, UserPlus
+  Pencil, PhoneCall, Tag, UserCheck, CircleDot, FilePlus, Receipt, Send, UserPlus
 } from "lucide-react";
 import { P } from "@/config/permissions";
 import { useAuth } from "@/context/AuthContext";
@@ -17,9 +17,10 @@ import {
   Select, Skeleton, Tabs, Textarea,
 } from "@/components/ui";
 import LeadFormDialog from "./LeadFormDialog";
+import QuotationTab from "./QuotationTab";
 
 /** The five stages shown on the progress rail, in order. */
-const PIPELINE = ["new", "in_progress", "quotation", "proforma_invoice", "finalized"];
+const PIPELINE = ["new", "assigned", "in_progress", "quotation", "proforma_invoice", "finalized"];
 
 const STATUS_TONE = {
   new: "blue", assigned: "violet", in_progress: "amber", quotation: "violet",
@@ -41,6 +42,7 @@ const ACTIVITY_STYLE = {
 /** Bar colour per stage, matching the badge tones. */
 const STAGE_BAR = {
   new: "bg-accent",
+  assigned: "bg-[#7c3aed]",
   in_progress: "bg-[#b45309]",
   quotation: "bg-[#7c3aed]",
   proforma_invoice: "bg-[#0f766e]",
@@ -71,10 +73,11 @@ export default function LeadDetailPage({ id }) {
 
   useEffect(() => {
     load();
-    leadService.getOptions().then(setOptions).catch(() => {});
-    locationService.listLocations({ pageSize: 100 }).then((r) => setLocations(r.items)).catch(() => {});
+    leadService.getOptions().then(setOptions).catch(() => { });
+    locationService.listLocations({ pageSize: 100 }).then((r) => setLocations(r.items)).catch(() => { });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
 
   if (error) {
     return (
@@ -111,7 +114,8 @@ export default function LeadDetailPage({ id }) {
     { key: "activity", label: "Activity", count: lead.activities.length },
     { key: "followups", label: "Follow-ups", count: lead.followups.length },
     { key: "messages", label: "Messages", count: lead.messages.length },
-  ];
+    can(P.QUOTATION_VIEW) && { key: "quotation", label: "Quotation" },
+  ].filter(Boolean);
 
   return (
     <div className="page">
@@ -196,7 +200,7 @@ export default function LeadDetailPage({ id }) {
               </>
             )}
 
-                        {tab === "activity" && (
+            {tab === "activity" && (
               <>
                 <p className="meta mb-4">Updated {formatDateTime(lead.updatedAt)}</p>
                 <ul className="grid gap-4">
@@ -270,6 +274,7 @@ export default function LeadDetailPage({ id }) {
                 </ul>
               )
             )}
+            {tab === "quotation" && <QuotationTab lead={lead} onChanged={load} />}
           </div>
         </section>
 
@@ -356,16 +361,17 @@ function Meta({ icon: Icon, children }) {
 
 /**
  * The five pipeline stages as a progress bar. Stages before the current one
- * are filled; "assigned" counts as New, since it is still the first stage.
+ * are filled; "assigned" also count now , it be second .
+ * 
  */
 function StageRail({ status, statusLabel, lostReason }) {
-  const current = status === "assigned" ? "new" : status;
+  const current = status;
   const index = PIPELINE.indexOf(current);
   const offPath = index === -1; // not_interested or cancelled
 
   return (
     <>
-      <ol className="grid gap-x-3 gap-y-2 sm:grid-cols-5">
+      <ol className="grid gap-x-3 gap-y-2 sm:grid-cols-6">
         {PIPELINE.map((key, i) => {
           const done = !offPath && i < index;
           const active = !offPath && i === index;

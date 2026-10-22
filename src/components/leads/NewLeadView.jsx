@@ -32,6 +32,8 @@ export default function NewLeadView() {
       document.querySelector("[aria-invalid='true']")?.focus();
       return;
     }
+    console.log("submitting lead", form);
+    return;
     const lead = await run(() => leadService.createLead(form), {
       success: (l) => `Lead ${l.id} created`,
       successDescription: (l) => (l.assignee ? `Assigned to ${l.assignee.name}` : "Not assigned yet"),

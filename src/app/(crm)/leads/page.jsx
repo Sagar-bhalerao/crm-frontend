@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import RequirePermission from "@/components/layout/RequirePermission";
+import LeadsListView from "@/components/leads/LeadsListView";
 import LeadsView from "@/components/leads/LeadsView";
 // import LeadsListsView from "@/components/leads/LeadsListView";
 
@@ -9,7 +10,7 @@ export default function Page() {
   return (
     <RequirePermission permission="lead.view">
       <Suspense>
-        <LeadsView />
+        <LeadsListView />
       </Suspense>
     </RequirePermission>
   );

@@ -10,8 +10,7 @@ import { ChipGroup, Field, Input, Select, Textarea } from "@/components/ui";
 export const EMPTY_LEAD = {
   type: "birthday_party",
   outletId: "",
-  source: "phone",
-  assignedToId: "",
+  source: "phone",  
   customer: { name: "", mobile: "", email: "" },
   company: { name: "", gstin: "", contactPerson: "", designation: "" },
   event: { date: "", timeSlot: "evening", guests: "", kids: "", celebrantName: "", celebrantAge: "", requirements: [], remarks: "" },
@@ -123,7 +122,7 @@ export default function LeadForm({ id, mode = "create", value, onChange, errors 
           </Field>
         )}
 
-        {mode === "create" && canAssign && (
+        {/* {mode === "create" && canAssign && (
           <Field label="Assign to" hint="Automatic picks the outlet Sales POC with the fewest open leads.">
             {(p) => (
               <Select
@@ -135,7 +134,7 @@ export default function LeadForm({ id, mode = "create", value, onChange, errors 
               />
             )}
           </Field>
-        )}
+        )} */}
       </FormSection>
 
       <FormSection title="Customer">
