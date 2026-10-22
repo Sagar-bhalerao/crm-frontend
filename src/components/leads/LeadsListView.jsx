@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Eye, Inbox, Pencil, Plus, Trash2 } from "lucide-react";
+import { Eye, Inbox, Pencil, Plus, Trash2, UserCheck } from "lucide-react";
 import { P } from "@/config/permissions";
 import { useAuth } from "@/context/AuthContext";
 import { useAction } from "@/hooks/useAction";
@@ -15,6 +15,7 @@ import {
 import { useAdminList } from "@/components/admin/useAdminList";
 import ListToolbar from "@/components/admin/ListToolbar";
 import LeadFormDialog from "./LeadFormDialog";
+import AssignLeadDialog from "./AssignLeadDialog";
 
 /** Colour per stage, so the pipeline reads at a glance. */
 const STATUS_TONE = {
@@ -42,13 +43,15 @@ export default function LeadsListView() {
   const [form, setForm] = useState(null);
   const [deleting, setDeleting] = useState(null);
   const [run, busy] = useAction();
+  const[assigning, setAssigning] = useState(null);
+  const canAssign = can(P.LEAD_ASSIGN);
 
   const canCreate = can(P.LEAD_CREATE);
   const canUpdate = can(P.LEAD_UPDATE);
   const canDelete = can(P.LEAD_DELETE);
 
   useEffect(() => {
-    leadService.getOptions().then(setOptions).catch(() => {});
+    leadService.getOptions().then(setOptions).catch(() => { });
     locationService
       .listLocations({ pageSize: 100, sort: "name:asc" })
       .then((r) => setLocations(r.items))
@@ -68,6 +71,12 @@ export default function LeadsListView() {
     { key: "view", label: "View details", icon: Eye, href: `/leads/${l.id}` },
     canUpdate && { key: "edit", label: "Edit lead", icon: Pencil, onClick: () => setForm({ lead: l }) },
     canDelete && { key: "delete", label: "Delete lead", icon: Trash2, tone: "danger", onClick: () => setDeleting(l), separator: true },
+    canAssign && {
+      key: "assign",
+      label: l.assignedTo ? "Reassign" : "Assign to…",
+      icon: UserCheck,
+      onClick: () => setAssigning(l),
+    },
   ];
 
   const columns = [
@@ -105,7 +114,16 @@ export default function LeadsListView() {
         </span>
       ),
     },
-    { key: "assigned", label: "Assigned to", render: (l) => <span className="text-body">{l.assignedToName || "Unassigned"}</span> },
+    {
+      key: "assigned",
+      label: "Assigned to",
+      render: (l) =>
+        l.assignedToName ? (
+          <span className="text-body">{l.assignedToName}</span>
+        ) : (
+          <span className="text-danger">Unassigned</span>
+        ),
+    },
     {
       key: "status",
       label: "Status",
@@ -176,6 +194,16 @@ export default function LeadsListView() {
               value: String(list.query.locationId || ""),
               options: locations.map((l) => ({ value: String(l.id), label: l.name })),
             },
+            {
+              key: "assigned",
+              placeholder: "Anyone",
+              value: list.query.assigned || "",
+              options: [
+                { value: "unassigned", label: "Unassigned" },
+                { value: "assigned", label: "Assigned" },
+              ],
+            },
+
           ]}
           sortOptions={SORT_OPTIONS}
           sort={list.query.sort}
@@ -228,7 +256,7 @@ export default function LeadsListView() {
       </section>
 
 
-    {/* to add & edit leads */}
+      {/* to add & edit leads */}
       <LeadFormDialog
         open={Boolean(form)}
         lead={form?.lead}
@@ -247,6 +275,13 @@ export default function LeadsListView() {
         loading={busy}
         onConfirm={confirmDelete}
         onClose={() => setDeleting(null)}
+      />
+
+      <AssignLeadDialog
+        open={Boolean(assigning)}
+        lead={assigning}
+        onClose={() => setAssigning(null)}
+        onSaved={list.reload}
       />
     </div>
   );

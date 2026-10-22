@@ -12,3 +12,4 @@ export * as authService from "./authService";
 export * as messagingService from "./messagingService";
 export * as leadService from "./leadService";
 export * as rateCardService from "./rateCardService";
+export * as quotationService from "./quotationService";
