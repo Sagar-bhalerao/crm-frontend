@@ -1,7 +1,9 @@
 import { API_BASE_URL } from "@/config/app";
 import { getToken } from "@/services/authToken";
-import { request } from "./client";
+import { request, requestList } from "./client";
 
+
+export const listQuotations = (query = {}) => request("/quotations", { query });
 export const listForLead = (leadId) => request(`/leads/${leadId}/quotations`);
 
 export const getQuotation = (id) => request(`/quotations/${id}`);

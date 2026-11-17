@@ -21,3 +21,7 @@ export const addFollowup = (id, input) => request(`/leads/${id}/followups`, { me
 export const deleteLead = (id) => request(`/leads/${id}`, { method: "DELETE" });
 
 export const getSummary = () => request("/leads/summary");
+
+export const listFollowups = () => request("/leads/followups");
+
+export const getDashboard = () => request("/leads/dashboard");

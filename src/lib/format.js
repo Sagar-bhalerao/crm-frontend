@@ -17,6 +17,11 @@ export const formatWeekday = (v) => (valid(v) ? weekdayFmt.format(new Date(v)) :
 export const formatTime = (v) => (valid(v) ? timeFmt.format(new Date(v)).toUpperCase() : "—");
 export const formatDateTime = (v) => (valid(v) ? `${formatDate(v)}, ${formatTime(v)}` : "—");
 export const formatCurrency = (n) => currencyFmt.format(Number(n) || 0);
+const compactCurrencyFmt = new Intl.NumberFormat(LOCALE, {
+  style: "currency", currency: "INR", notation: "compact", minimumFractionDigits: 0, maximumFractionDigits: 1,
+});
+/** ₹85K, ₹4.2L, ₹1.2Cr */
+export const formatCompactCurrency = (n) => compactCurrencyFmt.format(Number(n) || 0);
 export const formatNumber = (n) => numberFmt.format(Number(n) || 0);
 
 /** "5 min ago", "in 2 days", "Yesterday" */
