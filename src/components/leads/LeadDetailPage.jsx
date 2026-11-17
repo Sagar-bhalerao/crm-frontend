@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft, CalendarDays, CheckCircle2, FileText, MapPin,
-  Pencil, PhoneCall, Tag, UserCheck, CircleDot, FilePlus, Receipt, Send, UserPlus
+  Pencil, PhoneCall, Tag, UserCheck, CircleDot, FilePlus, Receipt, Send, UserPlus, Wallet
 } from "lucide-react";
 import { P } from "@/config/permissions";
 import { useAuth } from "@/context/AuthContext";
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui";
 import LeadFormDialog from "./LeadFormDialog";
 import QuotationTab from "./QuotationTab";
+import InvoiceTab from "./InvoiceTab";
 
 /** The five stages shown on the progress rail, in order. */
 const PIPELINE = ["new", "assigned", "in_progress", "quotation", "proforma_invoice", "finalized"];
@@ -37,6 +38,7 @@ const ACTIVITY_STYLE = {
   invoice: { icon: Receipt, tone: "bg-[#ccfbf1] text-[#0f766e]" },
   message_sent: { icon: Send, tone: "bg-success-soft text-success" },
   default: { icon: CircleDot, tone: "bg-subtle text-muted" },
+  payment: { icon: Wallet, tone: "bg-success-soft text-success" },
 };
 
 /** Bar colour per stage, matching the badge tones. */
@@ -115,6 +117,7 @@ export default function LeadDetailPage({ id }) {
     { key: "followups", label: "Follow-ups", count: lead.followups.length },
     { key: "messages", label: "Messages", count: lead.messages.length },
     can(P.QUOTATION_VIEW) && { key: "quotation", label: "Quotation" },
+    can(P.INVOICE_VIEW) && { key: "invoice", label: "Proforma invoice" },
   ].filter(Boolean);
 
   return (
@@ -275,6 +278,7 @@ export default function LeadDetailPage({ id }) {
               )
             )}
             {tab === "quotation" && <QuotationTab lead={lead} onChanged={load} />}
+            {tab === "invoice" && <InvoiceTab lead={lead} onChanged={load} />}
           </div>
         </section>
 

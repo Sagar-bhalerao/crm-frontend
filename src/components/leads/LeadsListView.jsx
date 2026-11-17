@@ -16,6 +16,7 @@ import { useAdminList } from "@/components/admin/useAdminList";
 import ListToolbar from "@/components/admin/ListToolbar";
 import LeadFormDialog from "./LeadFormDialog";
 import AssignLeadDialog from "./AssignLeadDialog";
+import { useSearchParams } from "next/navigation";
 
 /** Colour per stage, so the pipeline reads at a glance. */
 const STATUS_TONE = {
@@ -37,13 +38,21 @@ const SORT_OPTIONS = [
 
 export default function LeadsListView() {
   const { can } = useAuth();
-  const list = useAdminList(leadService.listLeads, { sort: "created_date:desc", leadType: "", locationId: "" });
+  const params = useSearchParams();
+  // Dashboard links arrive with filters in the URL, e.g. /leads?status=new
+  const list = useAdminList(leadService.listLeads, {
+    sort: "created_date:desc",
+    status: params.get("status") || "",
+    leadType: params.get("leadType") || "",
+    locationId: params.get("locationId") || "",
+    assigned: params.get("assigned") || "",
+  });
   const [options, setOptions] = useState({ statuses: [], types: [] });
   const [locations, setLocations] = useState([]);
   const [form, setForm] = useState(null);
   const [deleting, setDeleting] = useState(null);
   const [run, busy] = useAction();
-  const[assigning, setAssigning] = useState(null);
+  const [assigning, setAssigning] = useState(null);
   const canAssign = can(P.LEAD_ASSIGN);
 
   const canCreate = can(P.LEAD_CREATE);

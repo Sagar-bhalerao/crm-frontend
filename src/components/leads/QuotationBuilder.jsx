@@ -19,7 +19,7 @@ function defaultValidUntil() {
 }
 
 export default function QuotationBuilder({ open, lead, previous, onClose, onSaved }) {
-    
+
     const [rateCard, setRateCard] = useState(null);
     const [items, setItems] = useState([]);
     const [discount, setDiscount] = useState("0");
@@ -90,7 +90,7 @@ export default function QuotationBuilder({ open, lead, previous, onClose, onSave
             validUntil: validUntil || null,
             notes: notes.trim(),
         };
-        
+
         const saved = await run(() => quotationService.createQuotation(lead.id, payload), {
             success: (q) => `Quotation ${q.quotationCode} v${q.version} created`,
             successDescription: (q) => (q.pdfError ? q.pdfError : "The PDF is ready."),
@@ -100,6 +100,8 @@ export default function QuotationBuilder({ open, lead, previous, onClose, onSave
             onClose();
         }
     };
+
+    console.log("rateCard", rateCard);
 
     return (
         <Modal
@@ -137,12 +139,9 @@ export default function QuotationBuilder({ open, lead, previous, onClose, onSave
                                 onChange={(e) => e.target.value && addFromRateCard(e.target.value)}
                                 placeholder={rateCard.length ? "Add from rate card" : "No rate card for this location"}
                                 disabled={rateCard.length === 0}
-                                options={rateCard
-                                    .filter((r) => !r.blocked)
-                                    .map((r) => ({
-                                        value: String(r.id),
-                                        label: `${r.name} — ${money(r.rate)}${r.unit === "per_guest" ? " per guest" : ""}`,
-                                    }))}
+                                options={rateCard.filter((r) => !r.blocked).map((r) => ({
+                                    value: String(r.id), label: `${r.name} — ${money(r.rate)}${r.unit === "per_guest" ? " per guest" : ""}`,
+                                }))}
                                 className="w-auto"
                             />
                             <Button size="sm" icon={Plus} onClick={addBlank}>Add blank line</Button>
