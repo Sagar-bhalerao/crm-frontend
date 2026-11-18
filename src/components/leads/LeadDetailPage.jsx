@@ -58,6 +58,13 @@ export default function LeadDetailPage({ id }) {
   const [locations, setLocations] = useState([]);
   const [error, setError] = useState(null);
   const [tab, setTab] = useState("details");
+  const [invoiceFrom, setInvoiceFrom] = useState(null);
+
+  // "Create proforma invoice" on a quotation version: switch tabs and open the dialog for it
+  const createInvoiceFrom = (quotation) => {
+    setInvoiceFrom({ quotation });
+    setTab("invoice");
+  };
   const [dialog, setDialog] = useState(null); // edit | status | assign | followup
 
   const canUpdate = can(P.LEAD_UPDATE);
@@ -277,8 +284,21 @@ export default function LeadDetailPage({ id }) {
                 </ul>
               )
             )}
-            {tab === "quotation" && <QuotationTab lead={lead} onChanged={load} />}
-            {tab === "invoice" && <InvoiceTab lead={lead} onChanged={load} />}
+            {tab === "quotation" && (
+              <QuotationTab
+                lead={lead}
+                onChanged={load}
+                onCreateInvoice={can(P.INVOICE_CREATE) && can(P.INVOICE_VIEW) ? createInvoiceFrom : undefined}
+              />
+            )}
+            {tab === "invoice" && (
+              <InvoiceTab
+                lead={lead}
+                onChanged={load}
+                createFrom={invoiceFrom}
+                onCreateHandled={() => setInvoiceFrom(null)}
+              />
+            )}
           </div>
         </section>
 

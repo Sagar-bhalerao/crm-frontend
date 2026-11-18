@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FileText, Download, RefreshCw, Send } from "lucide-react";
+import { FileText, Download, Receipt, RefreshCw, Send } from "lucide-react";
 import { P } from "@/config/permissions";
 import { useAuth } from "@/context/AuthContext";
 import { useAction } from "@/hooks/useAction";
@@ -12,11 +12,12 @@ import { quotationService } from "@/services/admin";
 import { Badge, Button, EmptyState, ErrorState, Skeleton } from "@/components/ui";
 import QuotationBuilder from "./QuotationBuilder";
 
+
 const money = (n) => `₹${Number(n || 0).toLocaleString("en-IN")}`;
 
 const STATUS_TONE = { draft: "gray", shared: "violet", accepted: "green", rejected: "red", superseded: "gray" };
 
-export default function QuotationTab({ lead, onChanged }) {
+export default function QuotationTab({ lead, onChanged, onCreateInvoice }) {
   const { can } = useAuth();
   const toast = useToast();
   const [versions, setVersions] = useState(null);
@@ -171,15 +172,30 @@ export default function QuotationTab({ lead, onChanged }) {
                   <span className="text-[13px] text-danger">No PDF</span>
                 )}
 
+                {onCreateInvoice && !closed && (
+                  <Button size="sm" icon={Receipt} onClick={() => onCreateInvoice(q)}>
+                    Create proforma invoice
+                  </Button>
+                )}
+
                 {canCreate && !q.pdfPath && (
                   <Button size="sm" icon={RefreshCw} onClick={() => regenerate(q.id)} loading={busy}>
                     Generate PDF
                   </Button>
                 )}
 
-                {canCreate && !superseded && q.status === "draft" && q.pdfPath && (
-                  <Button size="sm" variant="primary" icon={Send} onClick={() => share(q.id)} loading={busy}>
-                    Share with customer
+                {/* Any version can go to the customer, older ones included */}
+                {canCreate && q.pdfPath && (
+                  <Button
+                    size="sm"
+                    variant={q.status === "draft" ? "primary" : "secondary"}
+                    icon={Send}
+                    onClick={() => share(q.id)}
+                    loading={busy}
+                    disabled={!lead.email}
+                    title={lead.email ? undefined : "This customer has no email address"}
+                  >
+                    {q.status === "draft" ? "Share with customer" : "Share again"}
                   </Button>
                 )}
               </div>

@@ -1,19 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlertTriangle, Download, IndianRupee, Pencil, Receipt, RefreshCw, Send, XCircle } from "lucide-react";
+import {
+  AlertTriangle, CheckCircle2, CopyPlus, Download, IndianRupee, Pencil, Receipt, RefreshCw, Send, XCircle,
+} from "lucide-react";
 import { P } from "@/config/permissions";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { useAction } from "@/hooks/useAction";
 import { formatDate, formatDateTime, toDateInput } from "@/lib/format";
-import { invoiceService, quotationService } from "@/services/admin";
+import { invoiceService, leadService, quotationService } from "@/services/admin";
 import { Badge, Button, EmptyState, ErrorState, Field, Input, Modal, Select, Skeleton, Textarea } from "@/components/ui";
 import InvoiceEditor from "./InvoiceEditor";
 
 const money = (n) => `₹${Number(n || 0).toLocaleString("en-IN")}`;
 
-const STATUS_TONE = { draft: "gray", sent: "violet", paid: "green", cancelled: "red" };
+const STATUS_TONE = { draft: "gray", sent: "violet", paid: "green", cancelled: "red", superseded: "gray" };
+
+// Cancelled and superseded invoices are history; anything else is the one in play
+const isHistory = (inv) => ["cancelled", "superseded"].includes(inv.status);
 
 const PAYMENT_MODES = [
   { value: "upi", label: "UPI" },
@@ -23,11 +28,16 @@ const PAYMENT_MODES = [
   { value: "cheque", label: "Cheque" },
 ];
 
-export default function InvoiceTab({ lead, onChanged }) {
+/**
+ * createFrom: { quotation } when the Quotation tab asked for an invoice from
+ * a particular version. The create dialog opens for it once the list loads.
+ */
+export default function InvoiceTab({ lead, onChanged, createFrom, onCreateHandled }) {
   const { can } = useAuth();
   const toast = useToast();
   const [invoices, setInvoices] = useState(null);
   const [quotation, setQuotation] = useState(undefined); // undefined = couldn't check
+  const [source, setSource] = useState(null); // the quotation the create dialog uses
   const [error, setError] = useState(null);
   const [dialog, setDialog] = useState(null); // create | edit | payment | cancel
   const [editing, setEditing] = useState(null);
@@ -42,7 +52,7 @@ export default function InvoiceTab({ lead, onChanged }) {
     try {
       const [list, quotes] = await Promise.all([
         invoiceService.listForLead(lead.id),
-        // Only used to label the Create button, so a missing permission is fine
+        // Only used to label buttons, so a missing permission is fine
         quotationService.listForLead(lead.id).catch(() => undefined),
       ]);
       setInvoices(list);
@@ -57,15 +67,33 @@ export default function InvoiceTab({ lead, onChanged }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lead.id]);
 
+  const active = invoices?.find((i) => !isHistory(i)) || null;
+  const history = invoices?.filter(isHistory) || [];
+
+  // Opened from the Quotation tab: wait for the list, then open the dialog
+  useEffect(() => {
+    if (!createFrom || !invoices) return;
+    onCreateHandled?.();
+    if (active?.status === "paid") {
+      toast.error(`The advance is already recorded on ${active.invoiceNumber}, so it can't be replaced.`);
+      return;
+    }
+    setSource(createFrom.quotation);
+    setDialog("create");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [createFrom, invoices]);
+
   if (error) return <ErrorState error={error} onRetry={load} />;
   if (!invoices) return <Skeleton className="h-48" />;
-
-  const active = invoices.find((i) => i.status !== "cancelled") || null;
-  const cancelled = invoices.filter((i) => i.status === "cancelled");
 
   const refresh = () => {
     load();
     onChanged?.();
+  };
+
+  const startCreate = (fromQuotation) => {
+    setSource(fromQuotation || quotation || null);
+    setDialog("create");
   };
 
   const openPdf = async (id) => {
@@ -97,12 +125,21 @@ export default function InvoiceTab({ lead, onChanged }) {
     if (ok) refresh();
   };
 
+  const finalize = async () => {
+    const ok = await run(() => leadService.changeStatus(lead.id, "finalized"), {
+      success: "Booking finalized",
+      successDescription: `${lead.name}'s event is confirmed.`,
+    });
+    if (ok) refresh();
+  };
+
   const editor = (
     <InvoiceEditor
       open={dialog === "create" || dialog === "edit"}
       lead={lead}
       invoice={dialog === "edit" ? editing : null}
-      quotation={quotation || null}
+      quotation={dialog === "create" ? source : null}
+      replaces={dialog === "create" ? active : null}
       onClose={() => setDialog(null)}
       onSaved={refresh}
     />
@@ -118,16 +155,16 @@ export default function InvoiceTab({ lead, onChanged }) {
           description={
             closed ? "This lead is closed."
               : noQuote ? "Create a quotation first. The invoice is built from it."
-                : quotation ? `It will be created from ${quotation.quotationCode} v${quotation.version} (${money(quotation.total)}).`
+                : quotation ? `It will be created from ${quotation.quotationCode} v${quotation.version} (${money(quotation.total)}). To use another version, use "Create proforma invoice" on that version in the Quotation tab.`
                   : "It will be created from the current quotation."
           }
           action={
             canCreate && !closed && !noQuote && (
-              <Button variant="primary" onClick={() => setDialog("create")}>Create proforma invoice</Button>
+              <Button variant="primary" onClick={() => startCreate()}>Create proforma invoice</Button>
             )
           }
         />
-        {cancelled.length > 0 && <CancelledList invoices={cancelled} onOpen={openPdf} />}
+        {history.length > 0 && <HistoryList invoices={history} onOpen={openPdf} />}
         {editor}
       </>
     );
@@ -149,16 +186,21 @@ export default function InvoiceTab({ lead, onChanged }) {
               {active.createdByName ? ` by ${active.createdByName}` : ""}
               {` · from quotation v${active.quotationVersion}`}
             </p>
-            {active.sentAt && <p className="meta">Emailed {formatDateTime(active.sentAt)}</p>}
+            {active.sentAt && <p className="meta">Last emailed {formatDateTime(active.sentAt)}</p>}
           </div>
           <p className="text-[15px] font-semibold text-ink">{money(active.total)}</p>
         </div>
 
-        {open && active.quotationOutdated && (
-          <p className="mt-3 flex gap-2 rounded-md bg-warning-soft px-3 py-2 text-[13px] text-warning">
-            <AlertTriangle size={15} className="mt-0.5 shrink-0" />
-            The quotation was revised after this invoice was made. Cancel this one and create a new invoice to pick up the changes.
-          </p>
+        {open && active.quotationOutdated && quotation && quotation.version !== active.quotationVersion && (
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-md bg-warning-soft px-3 py-2 text-[13px] text-warning">
+            <span className="flex gap-2">
+              <AlertTriangle size={15} className="mt-0.5 shrink-0" />
+              This invoice uses quotation v{active.quotationVersion}. The quotation is now at v{quotation.version}.
+            </span>
+            {canCreate && !closed && (
+              <Button size="sm" onClick={() => startCreate(quotation)}>New version from v{quotation.version}</Button>
+            )}
+          </div>
         )}
 
         <dl className="dl mt-4">
@@ -178,7 +220,11 @@ export default function InvoiceTab({ lead, onChanged }) {
             {active.advancePaid < active.advanceDue && (
               <p>{money(active.advanceDue - active.advancePaid)} short of the advance due.</p>
             )}
-            {lead.status !== "finalized" && <p>The booking can now be finalized from Update status.</p>}
+            {lead.status === "proforma_invoice" && canPay && (
+              <Button size="sm" variant="success" icon={CheckCircle2} onClick={finalize} loading={busy} className="mt-2">
+                Finalize booking
+              </Button>
+            )}
           </div>
         )}
 
@@ -193,7 +239,8 @@ export default function InvoiceTab({ lead, onChanged }) {
             <Button size="sm" icon={Pencil} onClick={openEdit} loading={busy}>Edit</Button>
           )}
 
-          {canCreate && open && active.pdfPath && (
+          {/* Re-sending is allowed at any stage: customers ask for another copy */}
+          {canCreate && active.pdfPath && (
             <Button
               size="sm"
               variant={active.status === "draft" ? "primary" : "secondary"}
@@ -213,6 +260,10 @@ export default function InvoiceTab({ lead, onChanged }) {
             </Button>
           )}
 
+          {canCreate && open && !closed && (
+            <Button size="sm" icon={CopyPlus} onClick={() => startCreate()}>New version</Button>
+          )}
+
           {canCreate && open && (
             <Button size="sm" variant="ghost" icon={XCircle} onClick={() => setDialog("cancel")} className="text-danger">
               Cancel invoice
@@ -221,7 +272,7 @@ export default function InvoiceTab({ lead, onChanged }) {
         </div>
       </div>
 
-      {cancelled.length > 0 && <CancelledList invoices={cancelled} onOpen={openPdf} />}
+      {history.length > 0 && <HistoryList invoices={history} onOpen={openPdf} />}
 
       {editor}
       <PaymentDialog open={dialog === "payment"} invoice={active} onClose={() => setDialog(null)} onSaved={refresh} />
@@ -230,17 +281,24 @@ export default function InvoiceTab({ lead, onChanged }) {
   );
 }
 
-/** Cancelled invoices stay on record, numbers and all. */
-function CancelledList({ invoices, onOpen }) {
+/** Earlier versions and cancelled invoices stay on record, numbers and all. */
+function HistoryList({ invoices, onOpen }) {
   return (
     <div className="mt-5">
-      <p className="section-title mb-2">Cancelled</p>
+      <p className="section-title mb-2">Earlier versions</p>
       <ul className="grid gap-2">
         {invoices.map((i) => (
           <li key={i.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-line bg-subtle/40 px-3 py-2.5">
             <div className="min-w-0">
-              <p className="text-sm text-ink">{i.invoiceNumber} · {money(i.total)}</p>
-              <p className="meta">Cancelled {formatDate(i.cancelledAt)}{i.cancelReason ? `: ${i.cancelReason}` : ""}</p>
+              <p className="flex flex-wrap items-center gap-2 text-sm text-ink">
+                {i.invoiceNumber} · {money(i.total)}
+                <Badge tone={STATUS_TONE[i.status] || "gray"}>{i.status}</Badge>
+              </p>
+              <p className="meta">
+                {i.status === "cancelled"
+                  ? `Cancelled ${formatDate(i.cancelledAt)}${i.cancelReason ? `: ${i.cancelReason}` : ""}`
+                  : `From quotation v${i.quotationVersion}, created ${formatDate(i.createdAt)}${i.sentAt ? `, emailed ${formatDate(i.sentAt)}` : ""}`}
+              </p>
             </div>
             {i.pdfPath && <Button size="sm" variant="ghost" icon={Download} onClick={() => onOpen(i.id)}>PDF</Button>}
           </li>
