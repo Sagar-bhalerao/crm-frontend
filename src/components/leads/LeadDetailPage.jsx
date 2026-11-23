@@ -498,7 +498,7 @@ function AssignDialog({ open, lead, onClose, onSaved }) {
     if (!open) return;
     setAssignedTo(lead.assignedTo ? String(lead.assignedTo) : "");
     userService
-      .listUsers({ locationId: lead.locationId, status: 1, pageSize: 100 })
+      .listSalePocsByLocation(lead.locationId)
       .then((r) => setUsers(r.items))
       .catch(() => setUsers([]));
   }, [open, lead]);

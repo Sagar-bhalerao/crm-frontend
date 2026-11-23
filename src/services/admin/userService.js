@@ -1,6 +1,7 @@
 import { request, requestList } from "./client";
 
 export const listUsers = (query = {}) => requestList("/users", { query });
+export const listSalePocsByLocation = (locationId) => request(`/users/sale-pocs/${locationId}`);
 
 export const getUser = (id) => request(`/users/${id}`);
 

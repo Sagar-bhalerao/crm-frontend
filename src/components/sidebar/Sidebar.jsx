@@ -10,6 +10,9 @@ import { useQuery } from "@/hooks/useQuery";
 import { orgService } from "@/services";
 import { cx } from "@/lib/utils";
 
+import Logo from "../brand/Logo";
+
+
 export default function Sidebar({ onClose }) {
   const pathname = usePathname();
   const { user, can } = useAuth();
@@ -28,9 +31,8 @@ export default function Sidebar({ onClose }) {
   return (
     <div className="flex h-full flex-col">
       <div className="flex h-14 items-center justify-between gap-2 border-b border-line px-4">
-        <Link href="/dashboard" className="flex items-center gap-2.5">
-          <span className="grid h-7 w-7 place-items-center rounded-md bg-ink text-[13px] font-semibold text-white">N</span>
-          <span className="text-[15px] font-semibold text-ink">{APP_NAME}</span>
+        <Link href="/dashboard" aria-label="Circle CRM dashboard">
+          <Logo size={32} />
         </Link>
         {onClose && (
           <button onClick={onClose} className="btn btn-ghost btn-sm w-8 px-0" aria-label="Close navigation">
@@ -40,12 +42,12 @@ export default function Sidebar({ onClose }) {
       </div>
 
       {/* Brand context: one brand in Phase 1, a switcher later */}
-      <div className="border-b border-line px-4 py-3">
+      {/* <div className="border-b border-line px-4 py-3">
         <p className="text-[13px] font-medium text-ink">Dave &amp; Buster&apos;s India</p>
         <p className="meta truncate" title={scope}>
           {scope || "\u00a0"}
         </p>
-      </div>
+      </div> */}
 
       <nav className="flex-1 overflow-y-auto px-2 py-3" aria-label="Main">
         {sections.map((section) => (
@@ -79,7 +81,6 @@ export default function Sidebar({ onClose }) {
       </nav>
 
       <div className="border-t border-line px-4 py-3">
-        <p className="meta">Prototype with sample data</p>
       </div>
     </div>
   );

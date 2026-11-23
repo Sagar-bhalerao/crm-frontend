@@ -1,53 +1,69 @@
 import { Suspense } from "react";
+import { Check } from "lucide-react";
 import LoginForm from "@/components/auth/LoginForm";
-import { APP_NAME } from "@/config/app";
-import { PIPELINE_STATUSES } from "@/config/leadStatuses";
+import LoginShowcase from "@/components/auth/LoginShowcase";
+import Logo, { LogoMark } from "@/components/brand/Logo";
 
 export const metadata = { title: "Log in" };
 
 export default function LoginPage() {
   return (
-    <main className="grid min-h-dvh lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-      {/* Context panel (desktop) */}
-      <section className="hidden flex-col justify-between bg-ink px-12 py-10 text-white lg:flex">
-        <div className="flex items-center gap-2.5">
-          <span className="grid h-8 w-8 place-items-center rounded-md bg-white text-sm font-semibold text-ink">N</span>
-          <span className="text-base font-semibold">{APP_NAME}</span>
-        </div>
-
-        <div className="max-w-sm">
-          <h2 className="text-[28px] font-semibold leading-tight tracking-tight">Every party enquiry, from first call to confirmed booking.</h2>
-          <ol className="mt-8 grid gap-0">
-            {PIPELINE_STATUSES.map((s, i) => (
-              <li key={s.key} className="relative flex gap-4 pb-5 last:pb-0">
-                {i < PIPELINE_STATUSES.length - 1 && <span className="absolute left-[11px] top-6 bottom-0 w-px bg-white/20" aria-hidden />}
-                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-white/30 text-xs text-white/80">{i + 1}</span>
-                <span>
-                  <span className="block text-sm font-medium">{s.label}</span>
-                  <span className="block text-[13px] text-white/60">{s.hint}</span>
-                </span>
-              </li>
-            ))}
-          </ol>
-        </div>
-
-        <p className="text-xs text-white/50">Dave &amp; Buster&apos;s India. More Imagicaa World brands coming soon.</p>
+    <main className="grid min-h-dvh bg-ink lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:bg-surface">
+      {/* Brand panel (desktop) */}
+      <section className="relative hidden overflow-hidden bg-ink px-12 py-10 text-white lg:flex lg:flex-col">
+        <Logo size={36} tone="dark" />
+        <LoginShowcase />
       </section>
 
-      {/* Form */}
-      <section className="flex items-center justify-center bg-surface px-5 py-10 sm:px-10">
-        <div className="w-full max-w-md">
-          <div className="mb-8 flex items-center gap-2.5 lg:hidden">
-            <span className="grid h-8 w-8 place-items-center rounded-md bg-ink text-sm font-semibold text-white">N</span>
-            <span className="text-base font-semibold text-ink">{APP_NAME}</span>
+      <div className="flex min-h-dvh flex-col lg:min-h-0">
+        {/* Brand band (phones and tablets): the same story, told in one card */}
+        <header className="relative overflow-hidden px-5 pb-16 pt-7 text-white sm:px-10 lg:hidden">
+          <div className="pointer-events-none absolute -right-20 -top-16 opacity-[0.16]" aria-hidden>
+            <LogoMark size={280} />
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight text-ink">Log in</h1>
-          <p className="mb-6 mt-1 text-sm text-muted">Use your company email to access leads for your outlets.</p>
-          <Suspense>
-            <LoginForm />
-          </Suspense>
-        </div>
-      </section>
+
+          {/* Lines up with the form column below it */}
+          <div className="relative mx-auto w-full max-w-[380px]">
+            <Logo size={32} tone="dark" />
+
+            <p className="mt-8 max-w-[22ch] text-[24px] font-semibold leading-[1.2] tracking-tight sm:text-[28px]">
+              Every enquiry, from first call to confirmed booking.
+            </p>
+
+            <div
+              className="login-mobile-card mt-6 flex max-w-[320px] items-start gap-3 rounded-xl bg-white px-4 py-3 shadow-[0_18px_40px_-12px_rgb(0_0_0/0.55)]"
+              aria-hidden
+            >
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#2fbf8f] text-white">
+                <Check size={16} strokeWidth={2.5} />
+              </span>
+              <span>
+                <span className="block text-[13px] font-semibold text-[#152033]">Booking confirmed</span>
+                <span className="block text-xs leading-relaxed text-[#6b7686]">
+                  ₹24,000 advance received on <span className="whitespace-nowrap">PI-DBIMUM42</span>
+                </span>
+              </span>
+            </div>
+          </div>
+        </header>
+
+        {/* Form: a sheet over the band on phones and tablets, the plain right half on desktop */}
+        <section className="-mt-8 flex flex-1 flex-col rounded-t-[28px] bg-surface px-5 pb-6 pt-9 sm:px-10 lg:mt-0 lg:rounded-none lg:py-8">
+          <div className="mx-auto w-full max-w-[380px] sm:my-auto sm:py-10">
+            <h1 className="text-[26px] font-semibold tracking-tight text-ink">Log in</h1>
+            <p className="mb-7 mt-1.5 text-sm leading-relaxed text-muted">
+              Use your work email. You&apos;ll see the leads for your brands and outlets.
+            </p>
+            <Suspense>
+              <LoginForm />
+            </Suspense>
+          </div>
+
+          <p className="mt-auto pt-10 text-center text-[13px] text-muted lg:pt-0">
+            New to Circle CRM? Ask your admin to create your account.
+          </p>
+        </section>
+      </div>
     </main>
   );
 }
