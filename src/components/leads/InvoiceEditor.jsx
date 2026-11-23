@@ -15,7 +15,7 @@ const money = (n) =>
  * billing details and advance are asked for. Editing a draft opens the
  * items as well, since the POC may need to adjust them.
  */
-export default function InvoiceEditor({ open, lead, invoice, quotation, onClose, onSaved }) {
+export default function InvoiceEditor({ open, lead, invoice, quotation, replaces, onClose, onSaved }) {
   const editing = Boolean(invoice);
   const [form, setForm] = useState(null);
   const [items, setItems] = useState([]);
@@ -28,19 +28,21 @@ export default function InvoiceEditor({ open, lead, invoice, quotation, onClose,
     const source = invoice || quotation;
     const total = Number(source?.total || 0);
 
+    // A new version starts from the billing details of the one it replaces
+    const billing = invoice || replaces;
     setForm({
-      billingName: invoice?.billingName || lead.companyName || lead.name,
-      billingGstin: invoice?.billingGstin || lead.companyGstin || "",
-      billingAddress: invoice?.billingAddress || "",
+      billingName: billing?.billingName || lead.companyName || lead.name,
+      billingGstin: billing?.billingGstin || lead.companyGstin || "",
+      billingAddress: billing?.billingAddress || "",
       // Whole rupees: nobody asks a customer for ₹12,345.67
       advanceDue: String(invoice ? invoice.advanceDue : Math.round((total * DEFAULT_ADVANCE_PERCENT) / 100)),
-      notes: invoice?.notes || "",
+      notes: billing?.notes || "",
       discount: String(invoice?.discount ?? 0),
       discountType: invoice?.discountType || "rupees",
       taxRate: String(invoice?.taxRate ?? 18),
     });
     setItems(invoice?.items?.map((i) => ({ description: i.description, qty: String(i.qty), rate: String(i.rate) })) || []);
-  }, [open, invoice, quotation, lead]);
+  }, [open, invoice, quotation, replaces, lead]);
 
   if (!form) return null;
 
@@ -83,6 +85,8 @@ export default function InvoiceEditor({ open, lead, invoice, quotation, onClose,
       advanceDue: advance,
       notes: form.notes.trim(),
     };
+    // Without it the server uses the newest quotation, not the one picked
+    if (!editing && quotation) payload.quotationId = quotation.id;
     if (editing) {
       payload.items = validItems.map((i) => ({ description: i.description.trim(), qty: Number(i.qty), rate: Number(i.rate) || 0 }));
       payload.discount = Number(form.discount) || 0;
@@ -128,6 +132,12 @@ export default function InvoiceEditor({ open, lead, invoice, quotation, onClose,
       }
     >
       <form id="invoice-form" onSubmit={submit} noValidate className="grid gap-5">
+        {!editing && replaces && (
+          <p className="rounded-md bg-warning-soft px-3 py-2 text-[13px] text-warning">
+            This becomes the new version. {replaces.invoiceNumber} ({replaces.status}) will be marked superseded:
+            it stays on record but can no longer be emailed or paid against.
+          </p>
+        )}
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Bill to" required error={errors.billingName}>
             {(p) => <Input {...p} value={form.billingName} onChange={set("billingName")} />}

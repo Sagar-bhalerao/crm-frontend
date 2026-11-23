@@ -15,13 +15,14 @@ import { useSearchParams } from "next/navigation";
 
 const money = (n) => `₹${Number(n || 0).toLocaleString("en-IN")}`;
 
-const STATUS_TONE = { draft: "gray", sent: "violet", paid: "green", cancelled: "red" };
+const STATUS_TONE = { draft: "gray", sent: "violet", paid: "green", cancelled: "red", superseded: "gray" };
 
 const STATUS_OPTIONS = [
   { value: "draft", label: "Draft" },
   { value: "sent", label: "Sent, awaiting advance" },
   { value: "paid", label: "Paid" },
   { value: "cancelled", label: "Cancelled" },
+  { value: "superseded", label: "Superseded" },
 ];
 
 const SORT_OPTIONS = [
@@ -161,7 +162,7 @@ export default function InvoicesView() {
   );
 
   const filters = [
-    { key: "status", placeholder: "All except cancelled", value: list.query.status, options: STATUS_OPTIONS },
+    { key: "status", placeholder: "Current invoices", value: list.query.status, options: STATUS_OPTIONS },
     locations.length > 0 && {
       key: "locationId",
       placeholder: "All locations",
